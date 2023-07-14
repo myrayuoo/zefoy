@@ -19,23 +19,24 @@ text = """
 class zefoy:
 
     def __init__(self):
-        self.driver      = uc.Chrome()
-        self.captcha_box = '/html/body/div[5]/div[2]/form/div/div'
-        self.clear       = "clear"
-        
-        if platform.system() == "Windows":
-            self.clear = "cls"
-        
-        self.color  = Fore.BLUE
-        self.sent   = 0
-        self.xpaths = {
-            "followers"     : "/html/body/div[6]/div/div[2]/div/div/div[2]/div/button",
-            "hearts"        : "/html/body/div[6]/div/div[2]/div/div/div[3]/div/button",
-            "comment_hearts": "/html/body/div[6]/div/div[2]/div/div/div[4]/div/button",
-            "views"         : "/html/body/div[6]/div/div[2]/div/div/div[5]/div/button",
-            "shares"        : "/html/body/div[6]/div/div[2]/div/div/div[6]/div/button",
-            "favorites"     : "/html/body/div[6]/div/div[2]/div/div/div[7]/div/button",
-        }
+    self.driver      = uc.Chrome()
+    self.captcha_box = '/html/body/div[5]/div[2]/form/div/div'
+    self.clear       = "clear"
+    
+    if platform.system() == "Windows":
+        self.clear = "cls"
+    
+    self.color  = Fore.BLUE
+    self.sent   = 0
+    self.trys   = 0
+    self.xpaths = {
+        "followers"     : "/html/body/div[6]/div/div[2]/div/div/div[2]/div/button",
+        "hearts"        : "/html/body/div[6]/div/div[2]/div/div/div[3]/div/button",
+        "comment_hearts": "/html/body/div[6]/div/div[2]/div/div/div[4]/div/button",
+        "views"         : "/html/body/div[6]/div/div[2]/div/div/div[5]/div/button",
+        "shares"        : "/html/body/div[6]/div/div[2]/div/div/div[6]/div/button",
+        "favorites"     : "/html/body/div[6]/div/div[2]/div/div/div[7]/div/button",
+    }
         
     def main(self):
         os.system(self.clear)
@@ -106,26 +107,34 @@ class zefoy:
         self.send_bot(search_box, video_url_box, vid_info, div)
 
     def send_bot(self, search_button, main_xpath, vid_info, div):
+    try:
         element = self.driver.find_element('xpath', main_xpath)
         element.clear()
         element.send_keys(vid_info)
         self.driver.find_element('xpath', search_button).click()
         time.sleep(3)
-        
+
         ratelimit_seconds, full = self.check_submit(div)
         if "(s)" in str(full):
             self.main_sleep(ratelimit_seconds)
             self.driver.find_element('xpath', search_button).click()
             time.sleep(2)
-        
+
         time.sleep(3)
-        
+
         send_button = f'/html/body/div[{div}]/div/div/div[1]/div/form/button'
         self.driver.find_element('xpath', send_button).click()
         self.sent += 1
         print(self._print(f"Sent {self.sent} times."))
-        
+
         time.sleep(4)
+        self.send_bot(search_button, main_xpath, vid_info, div)
+
+
+    except Exception as e:
+        os.system(self.clear)  # Clear the console
+        self.trys += 1
+        print(Fore.WHITE+"["+Fore.RED+"!"+Fore.WHITE+f'] FAILED TO SEND - {self.trys}')
         self.send_bot(search_button, main_xpath, vid_info, div)
 
     def main_sleep(self, delay):
